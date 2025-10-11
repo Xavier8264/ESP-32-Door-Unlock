@@ -3,11 +3,11 @@
 
 // Motor Type Selection (uncomment ONE option)
 #define SERVO_MOTOR 1
-//#define STEPPER_MOTOR 2
-//#define DC_MOTOR 3
+#define STEPPER_MOTOR 2
+#define DC_MOTOR 3
 
 // Set your motor type here
-#define MOTOR_TYPE SERVO_MOTOR
+#define MOTOR_TYPE STEPPER_MOTOR
 
 // =====================================
 // SERVO MOTOR CONFIGURATION
@@ -19,14 +19,15 @@
 #endif
 
 // =====================================
-// STEPPER MOTOR CONFIGURATION
+// STEPPER MOTOR CONFIGURATION (Nema 17 + A4988/DRV8825)
 // =====================================
 #if MOTOR_TYPE == STEPPER_MOTOR
-  #define STEPPER_PIN1 19
-  #define STEPPER_PIN2 21
-  #define STEPPER_PIN3 22
-  #define STEPPER_PIN4 23
-  #define STEPPER_UNLOCK_STEPS 512   // Number of steps to unlock (512 = full rotation for 28BYJ-48)
+  #define STEPPER_STEP_PIN 19      // Connect to STEP on driver
+  #define STEPPER_DIR_PIN 21       // Connect to DIR on driver
+  #define STEPPER_ENABLE_PIN 22    // (Optional) Connect to EN on driver
+  #define STEPPER_UNLOCK_STEPS 200 // Number of steps to unlock (1 rev = 200 steps for 1.8°/step motor)
+  #define STEPPER_LOCK_STEPS   200 // Number of steps to lock (reverse direction)
+  #define STEPPER_STEP_DELAY_US 1000 // Microseconds between steps (controls speed)
 #endif
 
 // =====================================

@@ -26,13 +26,15 @@ A remote door unlock system using ESP32 WROOM dev board with web interface acces
 
 ### Motor Options (Choose one)
 1. **Servo Motor (Recommended for beginners)**
-   - SG90 Micro Servo (9g)
+   - TowerPro SG90 Micro Servo (9g)
    - Operating voltage: 4.8V-6V
    - Easy to control and position
 
-2. **Stepper Motor**
-   - 28BYJ-48 5V Stepper Motor with ULN2003 Driver
-   - More precise positioning
+2. **Stepper Motor (Nema 17 + Stepper Driver)**
+   - STEPPERONLINE Nema 17 Bipolar Stepper Motor (4-wire)
+   - Requires stepper driver (A4988, DRV8825, TMC2208, etc.)
+   - 12V power supply recommended for Nema 17
+   - More precise and powerful positioning
 
 3. **DC Motor with Motor Driver**
    - Small DC motor (3-6V)
@@ -55,16 +57,28 @@ GPIO 18             →    Signal (Orange/Yellow)
 GND                 →    GND (Brown/Black)
 ```
 
-### Option 2: Stepper Motor (28BYJ-48 with ULN2003)
+
+### Option 2: Stepper Motor (Nema 17 + Stepper Driver)
 ```
-AITRIP ESP32 Pin    →    ULN2003 Pin
-GPIO 19             →    IN1
-GPIO 21             →    IN2
-GPIO 22             →    IN3
-GPIO 23             →    IN4
-5V                  →    VCC
+AITRIP ESP32 Pin    →    Stepper Driver Pin (A4988/DRV8825)
+GPIO 19             →    STEP
+GPIO 21             →    DIR
+3V3 or 5V           →    VDD (logic power, check driver specs)
 GND                 →    GND
+
+Stepper Driver      →    Nema 17 Motor Wires
+2B, 2A, 1A, 1B      →    Connect to Nema 17 (see datasheet for color order)
+
+Stepper Driver      →    Power
+VMOT, GND           →    12V (recommended for Nema 17)
 ```
+
+**Notes:**
+- Adjust current limit on driver for your Nema 17 (2A max, see datasheet)
+- Never connect/disconnect motor with power on
+- Use heatsink on driver for high current
+- DIR = direction, STEP = step pulse
+
 
 ### Option 3: DC Motor (with L298N)
 ```

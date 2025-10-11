@@ -216,12 +216,17 @@ void setupMotor() {
     doorServo.write(SERVO_LOCK_POSITION);
     Serial.println("Servo motor initialized");
     
+
   #elif MOTOR_TYPE == STEPPER_MOTOR
-    pinMode(STEPPER_PIN1, OUTPUT);
-    pinMode(STEPPER_PIN2, OUTPUT);
-    pinMode(STEPPER_PIN3, OUTPUT);
-    pinMode(STEPPER_PIN4, OUTPUT);
-    Serial.println("Stepper motor initialized");
+    pinMode(STEPPER_STEP_PIN, OUTPUT);
+    pinMode(STEPPER_DIR_PIN, OUTPUT);
+    #ifdef STEPPER_ENABLE_PIN
+      pinMode(STEPPER_ENABLE_PIN, OUTPUT);
+      digitalWrite(STEPPER_ENABLE_PIN, LOW); // Enable driver (LOW for A4988/DRV8825)
+    #endif
+    digitalWrite(STEPPER_STEP_PIN, LOW);
+    digitalWrite(STEPPER_DIR_PIN, LOW);
+    Serial.println("Stepper motor (Nema 17 + driver) initialized");
     
   #elif MOTOR_TYPE == DC_MOTOR
     pinMode(DC_MOTOR_PIN1, OUTPUT);
@@ -405,12 +410,22 @@ void unlockDoor() {
   #if MOTOR_TYPE == SERVO_MOTOR
     doorServo.write(SERVO_UNLOCK_POSITION);
     
+
   #elif MOTOR_TYPE == STEPPER_MOTOR
-    // Rotate stepper motor to unlock position
+    // Rotate stepper motor to unlock position (forward)
+    digitalWrite(STEPPER_DIR_PIN, HIGH); // Set direction to unlock
+    #ifdef STEPPER_ENABLE_PIN
+      digitalWrite(STEPPER_ENABLE_PIN, LOW); // Enable driver
+    #endif
     for(int i = 0; i < STEPPER_UNLOCK_STEPS; i++) {
-      stepperStep(i % 4);
-      delay(2);
+      digitalWrite(STEPPER_STEP_PIN, HIGH);
+      delayMicroseconds(STEPPER_STEP_DELAY_US);
+      digitalWrite(STEPPER_STEP_PIN, LOW);
+      delayMicroseconds(STEPPER_STEP_DELAY_US);
     }
+    #ifdef STEPPER_ENABLE_PIN
+      digitalWrite(STEPPER_ENABLE_PIN, HIGH); // Disable driver
+    #endif
     
   #elif MOTOR_TYPE == DC_MOTOR
     // Run DC motor for unlock duration
@@ -431,12 +446,22 @@ void lockDoor() {
   #if MOTOR_TYPE == SERVO_MOTOR
     doorServo.write(SERVO_LOCK_POSITION);
     
+
   #elif MOTOR_TYPE == STEPPER_MOTOR
-    // Rotate stepper motor back to lock position
-    for(int i = 0; i < STEPPER_UNLOCK_STEPS; i++) {
-      stepperStep(3 - (i % 4));
-      delay(2);
+    // Rotate stepper motor to lock position (reverse)
+    digitalWrite(STEPPER_DIR_PIN, LOW); // Set direction to lock
+    #ifdef STEPPER_ENABLE_PIN
+      digitalWrite(STEPPER_ENABLE_PIN, LOW); // Enable driver
+    #endif
+    for(int i = 0; i < STEPPER_LOCK_STEPS; i++) {
+      digitalWrite(STEPPER_STEP_PIN, HIGH);
+      delayMicroseconds(STEPPER_STEP_DELAY_US);
+      digitalWrite(STEPPER_STEP_PIN, LOW);
+      delayMicroseconds(STEPPER_STEP_DELAY_US);
     }
+    #ifdef STEPPER_ENABLE_PIN
+      digitalWrite(STEPPER_ENABLE_PIN, HIGH); // Disable driver
+    #endif
     
   #elif MOTOR_TYPE == DC_MOTOR
     // Run DC motor in reverse for lock duration
@@ -450,36 +475,8 @@ void lockDoor() {
   Serial.println("Door locked");
 }
 
-#if MOTOR_TYPE == STEPPER_MOTOR
-void stepperStep(int step) {
-  switch(step) {
-    case 0:
-      digitalWrite(STEPPER_PIN1, HIGH);
-      digitalWrite(STEPPER_PIN2, LOW);
-      digitalWrite(STEPPER_PIN3, LOW);
-      digitalWrite(STEPPER_PIN4, LOW);
-      break;
-    case 1:
-      digitalWrite(STEPPER_PIN1, LOW);
-      digitalWrite(STEPPER_PIN2, HIGH);
-      digitalWrite(STEPPER_PIN3, LOW);
-      digitalWrite(STEPPER_PIN4, LOW);
-      break;
-    case 2:
-      digitalWrite(STEPPER_PIN1, LOW);
-      digitalWrite(STEPPER_PIN2, LOW);
-      digitalWrite(STEPPER_PIN3, HIGH);
-      digitalWrite(STEPPER_PIN4, LOW);
-      break;
-    case 3:
-      digitalWrite(STEPPER_PIN1, LOW);
-      digitalWrite(STEPPER_PIN2, LOW);
-      digitalWrite(STEPPER_PIN3, LOW);
-      digitalWrite(STEPPER_PIN4, HIGH);
-      break;
-  }
-}
-#endif
+
+// No stepperStep() needed for Nema 17 + driver (uses DIR/STEP pulses)
 
 void blinkLED(int times) {
   for(int i = 0; i < times; i++) {
